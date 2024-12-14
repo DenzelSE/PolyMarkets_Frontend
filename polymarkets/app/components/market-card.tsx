@@ -1,8 +1,15 @@
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Market } from '@/lib/types'
+import { useContext } from 'react'
+import { BuyType, PolyAppContext } from '../context/PolyAppContext'
 
 export function MarketCard({ market }: { market: Market }) {
+
+  const {useBuy} = useContext(PolyAppContext)
+
+
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -47,15 +54,23 @@ export function MarketCard({ market }: { market: Market }) {
           </div>
           <div className="flex items-center justify-between text-xs text-gray-400">
             <div className="flex items-center space-x-2">
-              <span>${market.volume.toLocaleString()} Vol</span>
+              <span>${market.volume} Vol</span>
               {/* <span>•</span>
               <span>{market.views} Views</span> */}
             </div>
             <div className="flex items-center space-x-2">
-              <button className="px-3 py-1 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20">
+              <button 
+              onClick={async () => {
+                useBuy(BuyType.YES)
+              }}
+              className="px-3 py-1 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20">
                 Buy Yes
               </button>
-              <button className="px-3 py-1 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20">
+              <button 
+              onClick={async () => {
+                useBuy(BuyType.NO)
+              }}
+              className="px-3 py-1 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20">
                 Buy No
               </button>
             </div>
