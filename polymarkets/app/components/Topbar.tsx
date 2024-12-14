@@ -1,5 +1,6 @@
 "use client"
 
+import { CreateMarketButton } from "./CreateMarketModal"
 import { SignInButton } from "./SignInButton"
 
 export const Topbar = () => {
@@ -13,11 +14,12 @@ export const Topbar = () => {
               <input
                 type="text"
                 placeholder="Search markets"
-                className="w-full bg-gray-800 rounded-md py-2 px-4 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full bg-gray-800 rounded-md py-2 px-4 text-sm focus:outline-none focus:ring-1"
               />
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            <CreateMarketButton />
             <SignInButton />
           </div>
         </div>

@@ -7,11 +7,18 @@ import { PolyAppContext } from './context/PolyAppContext'
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const {markets} = useContext(PolyAppContext);
+  const {markets, useReadMarkets, setMarkets} = useContext(PolyAppContext);
 
-  // useEffect(() => {
-  //   // useGetMarkets()
-  // },[])
+
+
+  useEffect(() => {
+
+    const _markets = useReadMarkets().then((_markets) => {
+      console.log(_markets)
+      setMarkets(_markets);
+    });
+
+  },[])
 
   const filteredMarkets = markets.filter(market => 
     selectedCategory === 'All' || market.category === selectedCategory
