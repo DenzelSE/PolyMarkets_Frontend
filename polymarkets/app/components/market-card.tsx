@@ -48,8 +48,8 @@ export function MarketCard({ market }: { market: Market }) {
           <div className="flex items-center justify-between text-xs text-gray-400">
             <div className="flex items-center space-x-2">
               <span>${market.volume.toLocaleString()} Vol</span>
-              <span>•</span>
-              <span>{market.views} Views</span>
+              {/* <span>•</span>
+              <span>{market.views} Views</span> */}
             </div>
             <div className="flex items-center space-x-2">
               <button className="px-3 py-1 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20">
