@@ -3,7 +3,7 @@ import { PolyAppContext, BuyType } from '../context/PolyAppContext'; // Adjust i
 import { Market } from "@/lib/types"; // Adjust import path as needed
 
 
-export const CreateMarketButton = ({createMarket}) => {
+export const CreateMarketButton = ({createMarket} : any) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => setIsModalOpen(true);
@@ -73,10 +73,10 @@ export const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ onClose, c
   return (
     <div 
       id="crud-modal" 
-      className="fixed inset-0 z-50 flex justify-center items-center bg-[#1a2027] bg-opacity-50"
+      className="fixed inset-0 z-50 flex justify-center items-center border-gray-600 bg-opacity-80"
     >
       <div className="relative p-4 w-full max-w-md max-h-full">
-        <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+        <div className="relative bg-[#1a2027] rounded-lg shadow">
           <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Create New Market

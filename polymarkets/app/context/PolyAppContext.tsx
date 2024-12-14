@@ -33,33 +33,6 @@ const polyMarketContract = getContract({
 })
 
 
-
-// const uZARContract = getContract({
-//   client: client,
-//   chain: defineChain(1135),
-//   address: "0xE29E8434FF23c4ab128AEA088eE4f434129F1Bf1"
-// });
-
-// const LotteryPotCard = () => {
-//   const {lotteryBalance, setLotteryBalance} = useContext(LotteryAppContext)
-
-
-//   const GetLotteryPot = async () => {
-//     const data = await readContract({
-//       contract: uZARContract,
-//       method:
-//         "function balanceOf(address account) view returns (uint256)",
-//       params: ['0x694E778589b0BCA0edD6933892a3c63B95A1518c'],
-//     });
-    
-//     setLotteryBalance(Number(data)/ 1e18)
-//   }
-
-//   useEffect(() => {
-//     GetLotteryPot()
-//   }, []);
-
-
 const useCreateMarket = async (quesion: string, expiresAt: number): Promise<void> => {
   await readContract({
     contract: polyMarketContract,
@@ -95,8 +68,8 @@ const useReadMarkets = async (): Promise<Market[]> => {
       id: `${_count}`,
       question: _market[0],
       icon: "",
-      yesPercentage: yesPercentage,
-      noPercentage: noPercentage,
+      yesPercentage: (yesPercentage) ? parseFloat(yesPercentage.toFixed(2)) : 0,
+      noPercentage: (noPercentage) ? parseFloat(noPercentage.toFixed(2)) : 0,
       expiresAt: new Date(parseInt(`${_market[3]}`) * 1000).toLocaleString(),
       resolved: _market[4],
       outcome: _market[5],
