@@ -7,6 +7,9 @@ export interface Market {
     yesPercentage: number
     noPercentage: number
     category: string
+    expiresAt: string
+    resolved: boolean
+    outcome: boolean
   }
   
   export type Category = 'All' | 'New' | 'Sports' | 'Politics' | 'Crypto' | 'Entertainment'

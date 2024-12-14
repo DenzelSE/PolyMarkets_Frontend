@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <ThirdwebProvider>
         <body className={`${inter.className} bg-[#1a2027] text-white min-h-screen`}>
-          <Topbar />
+          {/* <Topbar /> */}
           {children}
         </body>
       </ThirdwebProvider>

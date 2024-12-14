@@ -1,8 +1,9 @@
 "use client"
 
+import { CreateMarketButton } from "./CreateMarketModal"
 import { SignInButton } from "./SignInButton"
 
-export const Topbar = () => {
+export const Topbar = ({createMarket}) => {
   return (
     <nav className="border-b border-gray-800 bg-[#1a2027]">
       <div className="container mx-auto px-4 py-3">
@@ -13,11 +14,12 @@ export const Topbar = () => {
               <input
                 type="text"
                 placeholder="Search markets"
-                className="w-full bg-gray-800 rounded-md py-2 px-4 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full bg-gray-800 rounded-md py-2 px-4 text-sm focus:outline-none focus:ring-1"
               />
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            <CreateMarketButton createMarket={createMarket}/>
             <SignInButton />
           </div>
         </div>

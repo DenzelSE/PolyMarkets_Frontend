@@ -5,7 +5,7 @@ import {
   inAppWallet,
   createWallet,
 } from "thirdweb/wallets";
-import { thirdwebClient } from "../client";
+import { thirdwebClient } from "../config/client";
 
 
 const wallets = [
