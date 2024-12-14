@@ -5,7 +5,6 @@ import { defineChain, getContract, readContract } from "thirdweb";
 import { contractConfig } from "../config/contractConfig";
 import { thirdwebClient } from "../config/client";
 import Web3 from "web3";
-import { useReadContract } from "thirdweb/react";
 
 export enum BuyType {
   YES, 
@@ -19,6 +18,7 @@ interface AppContextType {
   setMarkets: React.Dispatch<React.SetStateAction<Market[]>>;
   useBuy: (buyType: BuyType) => Promise<void>;
   useReadMarkets: () => Promise<Market[]>,
+  useCreateMarket: (question:string, expiresAt: number) => Promise<void>
 }
 
 
@@ -59,6 +59,14 @@ const polyMarketContract = getContract({
 //     GetLotteryPot()
 //   }, []);
 
+
+const useCreateMarket = async (quesion: string, expiresAt: number): Promise<void> => {
+  await readContract({
+    contract: polyMarketContract,
+    method: "function createMarket(string, uint256) returns (string, uint256, uint256, uint256, bool,bool)",
+    params: [quesion, BigInt(expiresAt)]
+  })
+}
 
 const useReadMarkets = async (): Promise<Market[]> => {
   const count = await readContract({
@@ -118,7 +126,9 @@ export const PolyAppContext = createContext<AppContextType>({
   },
 
 
-  useReadMarkets: useReadMarkets
+  useReadMarkets: useReadMarkets,
+
+  useCreateMarket: useCreateMarket
 });
 
 // Create the context provider component
@@ -150,6 +160,7 @@ export const PolyAppContextProvider: React.FC<{ children: ReactNode }> = ({ chil
       setMarkets, 
       useBuy, 
       useReadMarkets: useReadMarkets,
+      useCreateMarket: useCreateMarket
     }}>
       {children}
     </PolyAppContext.Provider>

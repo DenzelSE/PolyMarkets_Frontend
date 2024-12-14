@@ -2,7 +2,8 @@ import React, { useState, useContext } from 'react';
 import { PolyAppContext, BuyType } from '../context/PolyAppContext'; // Adjust import path as needed
 import { Market } from "@/lib/types"; // Adjust import path as needed
 
-export const CreateMarketButton = () => {
+
+export const CreateMarketButton = ({createMarket}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => setIsModalOpen(true);
@@ -17,45 +18,47 @@ export const CreateMarketButton = () => {
         Create Market
       </button>
       
-      {isModalOpen && <CreateMarketModal onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && <CreateMarketModal onClose={() => setIsModalOpen(false)} createMarket={createMarket} />}
     </>
   )
 }
 
 interface CreateMarketModalProps {
   onClose: () => void;
+  createMarket: (question: string, expiresAt: number) => void
 }
 
-export const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ onClose }) => {
-  const { setMarkets } = useContext(PolyAppContext);
+export const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ onClose, createMarket }) => {
 
   // State for form inputs
-  const [marketName, setMarketName] = useState('');
-  const [expirationDate, setExpirationDate] = useState('');
+  const [question, setQuestion] = useState('');
+  const [expirationDate, setExpirationDate] = useState<string>('');
   const [category, setCategory] = useState('');
   const [file, setFile] = useState<File | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    createMarket(question, Math.floor(new Date(expirationDate).getTime() / 1000))
+
     // Create a new market object
-    const newMarket: Market = {
-      id: Date.now().toString(), // Simple unique ID generation
-      question: marketName,
-      category,
-      expiresAt: `${new Date(expirationDate)}`,
-      views: 0,
-      yesPercentage: 0,
-      noPercentage: 0,
-      volume: 0,
-      icon: "",
-      resolved: false,
-      outcome: false,
-      // Add other required fields based on your Market type
-    };
+    // const newMarket: Market = {
+    //   id: Date.now().toString(), // Simple unique ID generation
+    //   question: marketName,
+    //   category,
+    //   expiresAt: `${new Date(expirationDate)}`,
+    //   views: 0,
+    //   yesPercentage: 0,
+    //   noPercentage: 0,
+    //   volume: 0,
+    //   icon: "",
+    //   resolved: false,
+    //   outcome: false,
+    //   // Add other required fields based on your Market type
+    // };
 
     // Update markets in context
-    setMarkets((prevMarkets: Market[]) => [...prevMarkets, newMarket]);
+    // setMarkets((prevMarkets: Market[]) => [...prevMarkets, newMarket]);
 
     // Reset form and close modal
     onClose();
@@ -88,8 +91,8 @@ export const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ onClose })
                   type="text" 
                   name="name" 
                   id="name" 
-                  value={marketName}
-                  onChange={(e) => setMarketName(e.target.value)}
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" 
                   placeholder="Type market name" 
                   required 
