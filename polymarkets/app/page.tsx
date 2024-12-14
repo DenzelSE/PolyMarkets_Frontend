@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { MarketCard } from '@/components/market-card'
-import { CategoryScroll } from '@/components/category-scroll'
+import { MarketCard } from './components/market-card'
+import { CategoryScroll } from './components/category-scroll'
 import { marketData } from '@/lib/market-data'
 
 export default function Home() {
