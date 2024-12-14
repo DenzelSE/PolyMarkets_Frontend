@@ -1,14 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { MarketCard } from './components/market-card'
 import { CategoryScroll } from './components/category-scroll'
-import { marketData } from '@/lib/market-data'
+import { PolyAppContext } from './context/PolyAppContext'
 
 export default function Home() {
-  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const {markets} = useContext(PolyAppContext);
 
-  const filteredMarkets = marketData.filter(market => 
+  // useEffect(() => {
+  //   // useGetMarkets()
+  // },[])
+
+  const filteredMarkets = markets.filter(market => 
     selectedCategory === 'All' || market.category === selectedCategory
   )
 
