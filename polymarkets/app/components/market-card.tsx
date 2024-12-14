@@ -4,6 +4,7 @@ import { X, TrendingUp, TrendingDown, DollarSign, Clock } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Market } from '@/lib/types'
 import { BuyType, PolyAppContext } from '../context/PolyAppContext'
+import { MarketVotingTrendChart } from './VotingTrendChart'
 
 interface MarketDetailModalProps {
   market: Market
@@ -126,6 +127,9 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
                     </div>
                   ))}
                 </div>
+
+                {/* Trend Chart */}
+                <MarketVotingTrendChart />
 
                 {/* Buy Buttons */}
                 <div className="flex space-x-4">
