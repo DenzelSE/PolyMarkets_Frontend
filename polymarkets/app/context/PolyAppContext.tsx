@@ -16,9 +16,10 @@ interface AppContextType {
   markets: Market[];
   // useGetMarkets: () => void;
   setMarkets: React.Dispatch<React.SetStateAction<Market[]>>;
-  useBuy: (buyType: BuyType) => Promise<void>;
   useReadMarkets: () => Promise<Market[]>,
   useCreateMarket: (question:string, expiresAt: number) => Promise<void>
+  placeBet: ({marketId, vote, amount} : {marketId: bigint, vote: boolean, amount : bigint}) => Promise<void>
+  claimWinnings: ({marketId}: {marketId: bigint}) => Promise<void>
 }
 
 
@@ -82,6 +83,25 @@ const useReadMarkets = async (): Promise<Market[]> => {
   return _markets;
 }
 
+
+const placeBet = async ({marketId, vote, amount} : {marketId: bigint, vote: boolean, amount : bigint}) => {
+  await readContract({
+    contract: polyMarketContract,
+    method: "function placeBet(uint256, bool, uint256) public",
+    params: [marketId, vote, amount]
+  })
+
+}
+
+const claimWinnings = async ({marketId}: {marketId: bigint}) => {
+  await readContract({
+    contract: polyMarketContract,
+    method: "function claimWinnings(uint256) public",
+    params: [marketId]
+  })
+}
+
+
 // Create the context with a default value that matches the actual implementation
 export const PolyAppContext = createContext<AppContextType>({
   markets: marketData,
@@ -90,50 +110,46 @@ export const PolyAppContext = createContext<AppContextType>({
 
   setMarkets: () => {},
 
-  useBuy: async (buyType: BuyType) => {
-    try {
-      console.log(`Buying with type: ${BuyType[buyType]}`);
-    } catch (error) {
-      console.error('Error in buy operation:', error);
-    }
-  },
-
-
   useReadMarkets: useReadMarkets,
 
-  useCreateMarket: useCreateMarket
+  useCreateMarket: useCreateMarket,
+
+  claimWinnings: claimWinnings,
+
+  placeBet: placeBet
 });
 
 // Create the context provider component
 export const PolyAppContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [markets, setMarkets] = useState<Market[]>(marketData);
 
-  const useGetMarkets = useCallback(() => {
-    // setMarkets(setMarkets(marketData));
-  }, []);
+  // const useGetMarkets = useCallback(() => {
+  //   // setMarkets(setMarkets(marketData));
+  // }, []);
 
-  const useBuy = useCallback(async (buyType: BuyType) => {
-    try {
-      console.log(`Buying with type: ${BuyType[buyType]}`);
-      // Add your actual buying logic here
-      // For example, you might want to:
-      // - Make an API call
-      // - Update market state
-      // - Handle different buy types
-    } catch (error) {
-      console.error('Error in buy operation:', error);
-      // Add error handling as needed
-    }
-  }, []);
+  // const useBuy = useCallback(async (buyType: BuyType) => {
+  //   try {
+  //     console.log(`Buying with type: ${BuyType[buyType]}`);
+  //     // Add your actual buying logic here
+  //     // For example, you might want to:
+  //     // - Make an API call
+  //     // - Update market state
+  //     // - Handle different buy types
+  //   } catch (error) {
+  //     console.error('Error in buy operation:', error);
+  //     // Add error handling as needed
+  //   }
+  // }, []);
 
   return (
     <PolyAppContext.Provider value={{ 
-      markets, 
+      markets,
       // useGetMarkets, 
       setMarkets, 
-      useBuy, 
       useReadMarkets: useReadMarkets,
-      useCreateMarket: useCreateMarket
+      useCreateMarket: useCreateMarket,
+      placeBet: placeBet,
+      claimWinnings: claimWinnings
     }}>
       {children}
     </PolyAppContext.Provider>
