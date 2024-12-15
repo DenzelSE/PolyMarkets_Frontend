@@ -17,7 +17,6 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
   isOpen, 
   onClose 
 }) => {
-  const { useBuy } = React.useContext(PolyAppContext)
   
   // Variants for modal and backdrop animations
   const backdropVariants = {
@@ -131,21 +130,8 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
                 {/* Trend Chart */}
                 <MarketVotingTrendChart />
 
-                {/* Buy Buttons */}
-                <div className="flex space-x-4">
-                  <button
-                    onClick={() => useBuy(BuyType.YES)}
-                    className="flex-1 py-3 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20 transition-colors"
-                  >
-                    Buy Yes
-                  </button>
-                  <button
-                    onClick={() => useBuy(BuyType.NO)}
-                    className="flex-1 py-3 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20 transition-colors"
-                  >
-                    Buy No
-                  </button>
-                </div>
+                {(market.resolved) ? <ClaimButton /> : <VoteButton />}
+              
               </CardContent>
             </Card>
           </motion.div>
@@ -154,6 +140,43 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
     </AnimatePresence>
   )
 }
+
+
+const VoteButton = () => {
+  const { useBuy } = React.useContext(PolyAppContext)
+
+  return (
+    <div className="flex space-x-4">
+      <button
+        onClick={() => useBuy(BuyType.YES)}
+        className="flex-1 py-3 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20 transition-colors"
+      >
+        Buy Yes
+      </button>
+      <button
+        onClick={() => useBuy(BuyType.NO)}
+        className="flex-1 py-3 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20 transition-colors"
+      >
+        Buy No
+      </button>
+    </div>
+  )
+}
+
+const ClaimButton = () => {
+  return (
+    <div className='flex justify-end'>
+      <button 
+        onClick={() => {}}
+        className="block text-white bg-[#1F2937] hover:bg-[#1f2937ad] font-medium rounded-lg text-sm px-5 py-3 text-center" 
+        type="button">
+        Claim
+      </button>
+    </div>
+  )
+}
+
+
 
 
 export function MarketCard({ market }: { market: Market }) {
@@ -169,6 +192,9 @@ export function MarketCard({ market }: { market: Market }) {
         className="cursor-pointer"
       >
         <Card className="bg-[#1e262f] border-gray-800 hover:bg-[#232a34] transition-colors">
+          <div className='flex justify-end pt-4 pr-4'>
+            <IsResolved isResolved={market.resolved} />
+          </div>
           <div className="p-4">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
@@ -181,6 +207,7 @@ export function MarketCard({ market }: { market: Market }) {
                 </h3>
               </div>
             </div>
+            
             <div className="grid grid-cols-1 gap-4 mb-4">
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
@@ -207,6 +234,7 @@ export function MarketCard({ market }: { market: Market }) {
                 </div>
               </div>
             </div>
+            
             {/* <div className="flex items-center justify-between text-xs text-gray-400"> */}
               <div className="flex items-center justify-between text-xs text-gray-400">
               <div className="flex items-center space-x-2">
@@ -243,6 +271,24 @@ export function MarketCard({ market }: { market: Market }) {
       />
     </>
   )
+}
+
+
+const IsResolved = ({isResolved} : {isResolved: boolean}) => {
+  return (
+    (isResolved) ? 
+      <div
+        className="px-3 py-1 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20 w-min text-xs">
+        Resolved
+      </div>
+      
+      :
+
+      <div
+        className="px-3 py-1 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20 w-min text-xs">
+        Open
+      </div>
+    )
 }
 
 

@@ -74,7 +74,7 @@ const useReadMarkets = async (): Promise<Market[]> => {
       resolved: _market[4],
       outcome: _market[5],
       category: "/test.png",
-      volume: 0,
+      volume: parseFloat(Web3.utils.fromWei(_market[1], 'ether')) + parseFloat(Web3.utils.fromWei(_market[2], 'ether')),
       views: 0 
     });
   }
