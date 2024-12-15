@@ -6,6 +6,12 @@ import { Market } from '@/lib/types'
 import { PolyAppContext } from '../context/PolyAppContext'
 import { MarketVotingTrendChart } from './VotingTrendChart'
 import Image from 'next/image'
+import { useActiveAccount, useConnectModal } from 'thirdweb/react'
+import { thirdwebClient } from '../config/client'
+import { defineChain } from 'thirdweb'
+
+
+const AMOUNT: bigint = BigInt(10)
 
 interface MarketDetailModalProps {
   market: Market
@@ -133,7 +139,7 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
                 {/* Trend Chart */}
                 <MarketVotingTrendChart />
 
-                {(market.resolved) ? <ClaimButton marketId={BigInt(market.id)} /> : <VoteButton marketId={BigInt(market.id)} amount={BigInt(1)} />}
+                {(market.resolved) ? <ClaimButton marketId={BigInt(market.id)} /> : <VoteButton marketId={BigInt(market.id)} amount={AMOUNT} />}
               
               </CardContent>
             </Card>
@@ -148,16 +154,38 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
 const VoteButton = ({marketId, amount} : {marketId: bigint, amount: bigint}) => {
   const { placeBet } = React.useContext(PolyAppContext)
 
+  const { connect } = useConnectModal();
+
+  const account = useActiveAccount()
+
+  const _placeBet = async ({marketId, vote, amount}: {marketId: bigint, vote: boolean, amount: bigint}) => {
+    if (account) {
+      console.log("connected", account)
+      await placeBet({marketId, vote, amount, account})
+    }  else {
+      try {
+        const wallet = await connect({ client: thirdwebClient, accountAbstraction: {
+          chain: defineChain(4202),
+          sponsorGas: true,
+        }});
+        console.log("connected to : ", wallet)
+        await placeBet({marketId, vote, amount, account})
+      } catch(error) {
+        console.log(error)
+      }
+    }
+  } 
+
   return (
     <div className="flex space-x-4">
       <button
-        onClick={() => placeBet({marketId, vote: true, amount})}
+        onClick={() => _placeBet({marketId, vote: true, amount})}
         className="flex-1 py-3 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20 transition-colors"
       >
         Buy Yes
       </button>
       <button
-        onClick={() => placeBet({marketId, vote: false, amount})}
+        onClick={() => _placeBet({marketId, vote: false, amount})}
         className="flex-1 py-3 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20 transition-colors"
       >
         Buy No
@@ -165,6 +193,13 @@ const VoteButton = ({marketId, amount} : {marketId: bigint, amount: bigint}) => 
     </div>
   )
 }
+
+// const SignInModal = () => {
+
+//   return (
+//     useConnectModal()
+//   )
+// }
 
 const ClaimButton = ({marketId}: {marketId: bigint}) => {
 
@@ -189,7 +224,29 @@ const ClaimButton = ({marketId}: {marketId: bigint}) => {
 
 export function MarketCard({ market }: { market: Market }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const {placeBet} = useContext(PolyAppContext)
+  const { placeBet } = React.useContext(PolyAppContext)
+
+  const { connect } = useConnectModal();
+
+  const account = useActiveAccount()
+
+  const _placeBet = async ({marketId, vote, amount}: {marketId: bigint, vote: boolean, amount: bigint}) => {
+    if (account) {
+      console.log("connected", account)
+      await placeBet({marketId, vote, amount, account})
+    }  else {
+      try {
+        const wallet = await connect({ client: thirdwebClient, accountAbstraction: {
+          chain: defineChain(4202),
+          sponsorGas: true,
+        }});
+        console.log("connected to : ", wallet)
+        await placeBet({marketId, vote, amount, account})
+      } catch(error) {
+        console.log(error)
+      }
+    }
+  } 
 
   return (
     <>
@@ -253,14 +310,14 @@ export function MarketCard({ market }: { market: Market }) {
               <div className="flex items-center space-x-2">
                 <button 
                 onClick={async () => {
-                  placeBet({marketId: BigInt(market.id), vote: true, amount:BigInt(1)})
+                  _placeBet({marketId: BigInt(market.id), vote: true, amount:AMOUNT})
                 }}
                 className="px-3 py-1 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20">
                   Buy Yes
                 </button>
                 <button 
                 onClick={async () => {
-                  placeBet({marketId: BigInt(market.id), vote: false, amount: BigInt(1)})
+                  _placeBet({marketId: BigInt(market.id), vote: false, amount: AMOUNT})
                 }}
                 className="px-3 py-1 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20">
                   Buy No

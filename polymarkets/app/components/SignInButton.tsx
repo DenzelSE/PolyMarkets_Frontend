@@ -5,6 +5,7 @@ import {
   createWallet,
 } from "thirdweb/wallets";
 import { thirdwebClient } from "../config/client";
+import { defineChain } from "thirdweb";
 
 
 const wallets = [
@@ -32,6 +33,10 @@ const wallets = [
 export function SignInButton() {
   return (
     <ConnectButton
+      accountAbstraction = {{
+        chain: defineChain(4202),
+        sponsorGas: true,
+      }}
       client={thirdwebClient}
       wallets={wallets}
       theme={darkTheme({

@@ -1,6 +1,6 @@
 import { Market } from "@/lib/types";
 import React, { createContext, useState, ReactNode } from 'react';
-import { defineChain, getContract, readContract } from "thirdweb";
+import { defineChain, getContract, prepareContractCall, readContract, sendTransaction, toWei } from "thirdweb";
 import { contractConfig } from "../config/contractConfig";
 import { thirdwebClient } from "../config/client";
 import Web3 from "web3";
@@ -13,24 +13,44 @@ export enum BuyType {
 // Define the context interface
 interface AppContextType {
   markets: Market[];
-  // useGetMarkets: () => void;
   setMarkets: React.Dispatch<React.SetStateAction<Market[]>>;
   readMarkets: () => Promise<Market[]>,
   createMarket: (question:string, expiresAt: number) => Promise<void>
-  placeBet: ({marketId, vote, amount} : {marketId: bigint, vote: boolean, amount : bigint}) => Promise<void>
+  placeBet: ({marketId, vote, amount, account} : {marketId: bigint, vote: boolean, amount : bigint, account: any}) => Promise<void>
   claimWinnings: ({marketId}: {marketId: bigint}) => Promise<void>
+  // getAllowance: ({account}: {account: any}) => Promise<bigint>
 }
 
 
-const {address, chainId} = contractConfig
+const {marketContractAddress, uZarContractAddress, chainId} = contractConfig
 
 const chain = defineChain(chainId);
 
 const polyMarketContract = getContract({
   client: thirdwebClient,
   chain: chain,
-  address: address
+  address: marketContractAddress
 })
+
+
+const uZarContract = getContract({
+  client: thirdwebClient,
+  chain: chain,
+  address: uZarContractAddress
+})
+
+
+const getAllowance = async ({account} : {account: any}): Promise<bigint> => {
+  const allowance = await readContract({
+    contract: uZarContract,
+    method: "function allowance(address owner, address spender) view returns (uint256)",
+    params: [account.address, polyMarketContract.address],
+  });
+
+ 
+
+  return allowance;
+}
 
 
 const useCreateMarket = async (quesion: string, expiresAt: number): Promise<void> => {
@@ -83,13 +103,34 @@ const useReadMarkets = async (): Promise<Market[]> => {
 }
 
 
-const placeBet = async ({marketId, vote, amount} : {marketId: bigint, vote: boolean, amount : bigint}) => {
+const placeBet = async ({marketId, vote, amount, account} : {marketId: bigint, vote: boolean, amount : bigint, account: any}) => {
+
+  const allowance = await getAllowance({account})
+
+  console.log("allowance : ", allowance)
+
+  if (allowance < amount) {
+  //   // approve uZAR
+    const transaction =  prepareContractCall({
+      contract: uZarContract,
+      method: "function approve(address,uint256)",
+      params: [polyMarketContract.address, toWei(`${amount}`)],
+    });
+
+
+    const { transactionHash } = await sendTransaction({
+      transaction,
+      account,
+    });
+
+    
+  }
+
   await readContract({
     contract: polyMarketContract,
     method: "function placeBet(uint256, bool, uint256) public",
     params: [marketId, vote, amount]
   })
-
 }
 
 const claimWinnings = async ({marketId}: {marketId: bigint}) => {
@@ -115,7 +156,8 @@ export const PolyAppContext = createContext<AppContextType>({
 
   claimWinnings: claimWinnings,
 
-  placeBet: placeBet
+  placeBet: placeBet,
+  // getAllowance: getAllowance
 });
 
 // Create the context provider component
@@ -126,12 +168,12 @@ export const PolyAppContextProvider: React.FC<{ children: ReactNode }> = ({ chil
   return (
     <PolyAppContext.Provider value={{ 
       markets,
-      // useGetMarkets, 
       setMarkets, 
       readMarkets: useReadMarkets,
       createMarket: useCreateMarket,
       placeBet: placeBet,
-      claimWinnings: claimWinnings
+      claimWinnings: claimWinnings,
+      // getAllowance: getAllowance
     }}>
       {children}
     </PolyAppContext.Provider>
