@@ -1,6 +1,5 @@
-import { marketData } from "@/lib/market-data";
 import { Market } from "@/lib/types";
-import React, { createContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useState, ReactNode } from 'react';
 import { defineChain, getContract, readContract } from "thirdweb";
 import { contractConfig } from "../config/contractConfig";
 import { thirdwebClient } from "../config/client";
@@ -16,8 +15,8 @@ interface AppContextType {
   markets: Market[];
   // useGetMarkets: () => void;
   setMarkets: React.Dispatch<React.SetStateAction<Market[]>>;
-  useReadMarkets: () => Promise<Market[]>,
-  useCreateMarket: (question:string, expiresAt: number) => Promise<void>
+  readMarkets: () => Promise<Market[]>,
+  createMarket: (question:string, expiresAt: number) => Promise<void>
   placeBet: ({marketId, vote, amount} : {marketId: bigint, vote: boolean, amount : bigint}) => Promise<void>
   claimWinnings: ({marketId}: {marketId: bigint}) => Promise<void>
 }
@@ -51,7 +50,7 @@ const useReadMarkets = async (): Promise<Market[]> => {
 
   const _markets: Market[] = [] 
 
-  for (var _count = 0; _count < count; _count++) {
+  for (let _count = 0; _count < count; _count++) {
     const _market = await readContract({
       contract: polyMarketContract,
       method: "function getMarket(uint256) view returns (string, uint256, uint256, uint256, bool,bool)",
@@ -104,15 +103,15 @@ const claimWinnings = async ({marketId}: {marketId: bigint}) => {
 
 // Create the context with a default value that matches the actual implementation
 export const PolyAppContext = createContext<AppContextType>({
-  markets: marketData,
+  markets: [],
 
   // useGetMarkets: () => {},
 
   setMarkets: () => {},
 
-  useReadMarkets: useReadMarkets,
+  readMarkets: useReadMarkets,
 
-  useCreateMarket: useCreateMarket,
+  createMarket: useCreateMarket,
 
   claimWinnings: claimWinnings,
 
@@ -121,33 +120,16 @@ export const PolyAppContext = createContext<AppContextType>({
 
 // Create the context provider component
 export const PolyAppContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [markets, setMarkets] = useState<Market[]>(marketData);
+  const [markets, setMarkets] = useState<Market[]>([]);
 
-  // const useGetMarkets = useCallback(() => {
-  //   // setMarkets(setMarkets(marketData));
-  // }, []);
-
-  // const useBuy = useCallback(async (buyType: BuyType) => {
-  //   try {
-  //     console.log(`Buying with type: ${BuyType[buyType]}`);
-  //     // Add your actual buying logic here
-  //     // For example, you might want to:
-  //     // - Make an API call
-  //     // - Update market state
-  //     // - Handle different buy types
-  //   } catch (error) {
-  //     console.error('Error in buy operation:', error);
-  //     // Add error handling as needed
-  //   }
-  // }, []);
 
   return (
     <PolyAppContext.Provider value={{ 
       markets,
       // useGetMarkets, 
       setMarkets, 
-      useReadMarkets: useReadMarkets,
-      useCreateMarket: useCreateMarket,
+      readMarkets: useReadMarkets,
+      createMarket: useCreateMarket,
       placeBet: placeBet,
       claimWinnings: claimWinnings
     }}>

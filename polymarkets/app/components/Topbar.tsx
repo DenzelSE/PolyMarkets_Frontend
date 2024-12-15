@@ -3,7 +3,7 @@
 import { CreateMarketButton } from "./CreateMarketModal"
 import { SignInButton } from "./SignInButton"
 
-export const Topbar = ({createMarket} : any) => {
+export const Topbar = ({createMarket} : {createMarket: (question:string, expiresAt: number) => Promise<void>}) => {
   return (
     <nav className="border-b border-gray-800 bg-[#1a2027]">
       <div className="container mx-auto px-4 py-3">

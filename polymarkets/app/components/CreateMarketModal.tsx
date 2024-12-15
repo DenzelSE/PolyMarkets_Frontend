@@ -1,9 +1,7 @@
-import React, { useState, useContext } from 'react';
-import { PolyAppContext, BuyType } from '../context/PolyAppContext'; // Adjust import path as needed
-import { Market } from "@/lib/types"; // Adjust import path as needed
+import React, { useState } from 'react';
 
 
-export const CreateMarketButton = ({createMarket} : any) => {
+export const CreateMarketButton = ({createMarket} : {createMarket: (question:string, expiresAt: number) => Promise<void>}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => setIsModalOpen(true);

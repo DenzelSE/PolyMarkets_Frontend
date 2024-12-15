@@ -1,10 +1,11 @@
 import React, { useContext, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, TrendingUp, TrendingDown, DollarSign, Clock } from 'lucide-react'
+import { X, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Market } from '@/lib/types'
-import { BuyType, PolyAppContext } from '../context/PolyAppContext'
+import { PolyAppContext } from '../context/PolyAppContext'
 import { MarketVotingTrendChart } from './VotingTrendChart'
+import Image from 'next/image'
 
 interface MarketDetailModalProps {
   market: Market
@@ -94,9 +95,11 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
               <CardHeader className="flex flex-row items-center justify-between border-b border-gray-800 pb-4">
                 <div className="flex items-center space-x-3">
                   {market.icon && (
-                    <img 
+                    <Image
                       src={market.icon} 
                       alt="" 
+                      height={10}
+                      width={10}
                       className="w-10 h-10 rounded-full" 
                     />
                   )}
@@ -204,7 +207,7 @@ export function MarketCard({ market }: { market: Market }) {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
                 {market.icon && (
-                  <img src={market.icon} alt="" className="w-8 h-8 rounded-full" />
+                  <Image height={8} width={8} src={market.icon} alt="" className="w-8 h-8 rounded-full" />
                 )}
                 <h3
                   onClick={() => setIsModalOpen(true)}
