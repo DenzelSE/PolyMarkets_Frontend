@@ -1,4 +1,3 @@
-import { createThirdwebClient } from "thirdweb";
 import { ConnectButton } from "thirdweb/react";
 import { darkTheme } from "thirdweb/react";
 import {

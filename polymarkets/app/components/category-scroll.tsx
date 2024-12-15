@@ -2,7 +2,8 @@
 
 import { useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { categories } from '@/lib/market-data'
+import { categories } from '@/lib/categories'
+// import { categories } from '/lib/categories'
 
 interface CategoryScrollProps {
   selectedCategory: string

@@ -9,32 +9,29 @@ import { Topbar } from './components/Topbar'
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [markets, setMarkets] = useState<Market[]>([])
-  const {useReadMarkets, useCreateMarket} = useContext(PolyAppContext);
+  const {readMarkets, createMarket} = useContext(PolyAppContext);
 
 
-  const createMarket = async (question: string, expiresAt: number) => {
-    useCreateMarket(question, expiresAt).then((market) => {
+  const _createMarket = async (question: string, expiresAt: number) => {
+    try {
+      const market = await createMarket(question, expiresAt);
       console.log(market);
-
-      useReadMarkets().then((_markets) => {
-        setMarkets(_markets);
-      })
-
-
-    }).catch((error) => {
-        alert(error.message)
-    });
-  }
+      const _markets = await readMarkets();
+      setMarkets(_markets);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'An error occurred');
+    }
+  }   
 
   useEffect(() => {
 
-      useReadMarkets().then((_markets) => {
+      readMarkets().then((_markets: Market[]) => {
         setMarkets(_markets);
       });
 
       console.log(markets)
 
-  }, [useReadMarkets]); // Add fetchMarkets to dependency array
+  }, [readMarkets, setMarkets]); // Add fetchMarkets to dependency array
 
   const filteredMarkets = markets.filter(market =>
     selectedCategory === 'All' || market.category === selectedCategory
@@ -42,17 +39,22 @@ export default function Home() {
 
 
   return (
-    <main className="container mx-auto px-4 py-6">
-      <Topbar createMarket={createMarket} />
-      <CategoryScroll
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-      />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-        {filteredMarkets.map((market) => (
-          <MarketCard key={market.id} market={market} />
-        ))}
+    <main className="">
+      
+      <Topbar createMarket={_createMarket} />
+
+      <div className='container mx-auto py-6 px-4'>
+        <CategoryScroll
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          {filteredMarkets.map((market) => (
+            <MarketCard key={market.id} market={market} />
+          ))}
+        </div>
       </div>
+
     </main>
   )
 }
