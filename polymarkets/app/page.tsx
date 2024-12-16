@@ -5,6 +5,7 @@ import { CategoryScroll } from './components/category-scroll'
 import { PolyAppContext } from './context/PolyAppContext'
 import { Market } from '@/lib/types'
 import { Topbar } from './components/Topbar'
+import { AppSidebar } from './components/AppSidebar'
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -48,6 +49,7 @@ export default function Home() {
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
         />
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
           {filteredMarkets.map((market) => (
             <MarketCard key={market.id} market={market} />

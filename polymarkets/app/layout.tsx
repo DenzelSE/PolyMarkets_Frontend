@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThirdwebProvider } from 'thirdweb/react'
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { AppSidebar } from './components/AppSidebar'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,9 +20,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <ThirdwebProvider>
-        <body className={`${inter.className} bg-[#1a2027] text-white min-h-screen`}>
+        <body className={`${inter.className} bg-[#1a2027] flex text-white min-h-screen`}>
           {/* <Topbar /> */}
-          {children}
+          <SidebarProvider>
+            <AppSidebar />
+            <main>
+              <SidebarTrigger />
+                {children}
+            </main>
+          </SidebarProvider>
         </body>
       </ThirdwebProvider>
     </html>
