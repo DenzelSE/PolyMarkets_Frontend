@@ -1,9 +1,7 @@
-import React, { useState, useContext } from 'react';
-import { PolyAppContext, BuyType } from '../context/PolyAppContext'; // Adjust import path as needed
-import { Market } from "@/lib/types"; // Adjust import path as needed
+import React, { useState } from 'react';
 
 
-export const CreateMarketButton = ({createMarket}) => {
+export const CreateMarketButton = ({createMarket} : {createMarket: (question:string, expiresAt: number) => Promise<void>}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => setIsModalOpen(true);
@@ -35,6 +33,7 @@ export const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ onClose, c
   const [expirationDate, setExpirationDate] = useState<string>('');
   const [category, setCategory] = useState('');
   const [file, setFile] = useState<File | null>(null);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,10 +72,10 @@ export const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ onClose, c
   return (
     <div 
       id="crud-modal" 
-      className="fixed inset-0 z-50 flex justify-center items-center bg-[#1a2027] bg-opacity-50"
+      className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 backdrop-blur-sm"
     >
       <div className="relative p-4 w-full max-w-md max-h-full">
-        <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+        <div className="relative bg-[#1a2027] rounded-lg shadow">
           <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Create New Market
@@ -179,6 +178,17 @@ interface CategoryDropdownProps {
 }
 
 const CategoryDropdown: React.FC<CategoryDropdownProps> = ({ value, onChange }) => {
+
+  const categories = [
+    "Select category",
+    "News",
+    "Sports",
+    "Politics",
+    "Entertainment",
+    "Crypto",
+    "Technology"
+  ]
+
   return (
     <div className="col-span-2 sm:col-span-1">
       <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category</label>
@@ -189,11 +199,11 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({ value, onChange }) 
         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
         required
       >
-        <option value="">Select category</option>
-        <option value="TV">TV/Monitors</option>
-        <option value="PC">PC</option>
-        <option value="GA">Gaming/Console</option>
-        <option value="PH">Phones</option>
+        {
+          categories.map((item) => {
+            return <option key={item} value={(item == "Select category") ? "" : item}>{item}</option>
+          })
+        }
       </select>
     </div>
   )

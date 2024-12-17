@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { Topbar } from './components/Topbar'
 import { ThirdwebProvider } from 'thirdweb/react'
 
 const inter = Inter({ subsets: ['latin'] })
