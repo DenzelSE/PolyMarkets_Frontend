@@ -1,5 +1,6 @@
 export const contractConfig = {
-  marketContractAddress: "0x27b58dF03799c527973170066dC607Ca5D85736c",
-  uZarContractAddress: "0xBf715EB900bbEAa2C7e136E9c2A0C6AED93E8aeb",
-  chainId: 4202
+  marketContractAddress: "0x23386834A7D36FC173A16B8dc8dA92c648AA340f",
+  uZarContractAddress: "0x427271F417A4807b67840FC68d42b1Caabf775eB",
+  chainId: 534351,
+  rpc: "https://sepolia-rpc.scroll.io"
 }

@@ -4,6 +4,8 @@ import { defineChain, getContract, prepareContractCall, readContract, sendTransa
 import { contractConfig } from "../config/contractConfig";
 import { thirdwebClient } from "../config/client";
 import Web3 from "web3";
+import { useActiveAccount } from "thirdweb/react";
+import { Account } from "thirdweb/wallets";
 
 export enum BuyType {
   YES, 
@@ -15,9 +17,10 @@ interface AppContextType {
   markets: Market[];
   setMarkets: React.Dispatch<React.SetStateAction<Market[]>>;
   readMarkets: () => Promise<Market[]>,
-  createMarket: (question:string, expiresAt: number) => Promise<void>
+  createMarket: (question:string, expiresAt: number, account: Account) => Promise<void>
   placeBet: ({marketId, vote, amount, account} : {marketId: bigint, vote: boolean, amount : bigint, account: any}) => Promise<void>
   claimWinnings: ({marketId}: {marketId: bigint}) => Promise<void>
+  getMarket: ({marketId}: {marketId: number}) => Promise<Market>
   // getAllowance: ({account}: {account: any}) => Promise<bigint>
 }
 
@@ -53,12 +56,60 @@ const getAllowance = async ({account} : {account: any}): Promise<bigint> => {
 }
 
 
-const useCreateMarket = async (quesion: string, expiresAt: number): Promise<void> => {
-  await readContract({
+const useCreateMarket = async (quesion: string, expiresAt: number, account: Account): Promise<void> => {
+  console.log("date", BigInt(expiresAt))
+  console.log("question", quesion)
+
+
+
+  if (account) {
+    const transaction = prepareContractCall({
+      contract: polyMarketContract,
+      method: "function createMarket(string memory, uint256)",
+      params: [quesion, BigInt(expiresAt)]
+    })
+  
+  
+  
+    const tx = await sendTransaction({transaction, account})
+
+    console.log("create market txHash : ", tx);
+  }
+  
+}
+
+const getMarket = async ({marketId}: {marketId: number}) : Promise<Market> => {
+  const _market = await readContract({
     contract: polyMarketContract,
-    method: "function createMarket(string, uint256) returns (string, uint256, uint256, uint256, bool,bool)",
-    params: [quesion, BigInt(expiresAt)]
-  })
+    method: "function getMarket(uint256) view returns (string, uint256, uint256, uint256, bool,bool)",
+    params: [BigInt(marketId)]
+  });
+
+
+  const total = parseFloat(Web3.utils.fromWei(_market[1], 'ether') ) + parseFloat(Web3.utils.fromWei(_market[2], 'ether'));
+
+    const noPercentage = (parseFloat(Web3.utils.fromWei(_market[2], 'ether')) / total) * 100;
+    const yesPercentage = (parseFloat(Web3.utils.fromWei(_market[1], 'ether')) / total) * 100;
+
+
+    console.log("Updated Volume",parseFloat(Web3.utils.fromWei(_market[1], 'ether')) + parseFloat(Web3.utils.fromWei(_market[2], 'ether')))
+    console.log("Volume",_market[1] + _market[2])
+
+
+
+    return {
+      id: `${marketId}`,
+      question: _market[0],
+      icon: "",
+      yesPercentage: (yesPercentage) ? parseFloat(yesPercentage.toFixed(2)) : 0,
+      noPercentage: (noPercentage) ? parseFloat(noPercentage.toFixed(2)) : 0,
+      expiresAt: new Date(parseInt(`${_market[3]}`) * 1000).toLocaleString(),
+      resolved: _market[4],
+      outcome: _market[5],
+      category: "/test.png",
+      volume: parseFloat(Web3.utils.fromWei(_market[1], 'ether')) + parseFloat(Web3.utils.fromWei(_market[2], 'ether')),
+      views: 0 
+    }
 }
 
 const useReadMarkets = async (): Promise<Market[]> => {
@@ -70,33 +121,10 @@ const useReadMarkets = async (): Promise<Market[]> => {
 
   const _markets: Market[] = [] 
 
-  for (let _count = 0; _count < count; _count++) {
-    const _market = await readContract({
-      contract: polyMarketContract,
-      method: "function getMarket(uint256) view returns (string, uint256, uint256, uint256, bool,bool)",
-      params: [BigInt(_count)]
-    });
+  for (let marketId = 0; marketId < count; marketId++) {
+    const market = await getMarket({marketId})
 
-
-    const total = parseFloat(Web3.utils.fromWei(_market[1], 'ether') ) + parseFloat(Web3.utils.fromWei(_market[2], 'ether'));
-
-    const noPercentage = (parseFloat(Web3.utils.fromWei(_market[2], 'ether')) / total) * 100;
-    const yesPercentage = (parseFloat(Web3.utils.fromWei(_market[1], 'ether')) / total) * 100;
-
-
-    _markets.push({
-      id: `${_count}`,
-      question: _market[0],
-      icon: "",
-      yesPercentage: (yesPercentage) ? parseFloat(yesPercentage.toFixed(2)) : 0,
-      noPercentage: (noPercentage) ? parseFloat(noPercentage.toFixed(2)) : 0,
-      expiresAt: new Date(parseInt(`${_market[3]}`) * 1000).toLocaleString(),
-      resolved: _market[4],
-      outcome: _market[5],
-      category: "/test.png",
-      volume: parseFloat(Web3.utils.fromWei(_market[1], 'ether')) + parseFloat(Web3.utils.fromWei(_market[2], 'ether')),
-      views: 0 
-    });
+    _markets.push(market)
   }
 
   return _markets;
@@ -109,28 +137,41 @@ const placeBet = async ({marketId, vote, amount, account} : {marketId: bigint, v
 
   console.log("allowance : ", allowance)
 
-  if (allowance < amount) {
-  //   // approve uZAR
-    const transaction =  prepareContractCall({
-      contract: uZarContract,
-      method: "function approve(address,uint256)",
-      params: [polyMarketContract.address, toWei(`${amount}`)],
-    });
-
-
-    const { transactionHash } = await sendTransaction({
-      transaction,
-      account,
-    });
-
+  const approveAllowance = async () => {
+    if (allowance < toWei("100")) {
+      //   // approve uZAR
+        const transaction =  prepareContractCall({
+          contract: uZarContract,
+          method: "function approve(address,uint256)",
+          params: [polyMarketContract.address, toWei(`100`)],
+        });
     
+        await sendTransaction({
+          transaction,
+          account,
+        });
+      }
   }
 
-  await readContract({
-    contract: polyMarketContract,
-    method: "function placeBet(uint256, bool, uint256) public",
-    params: [marketId, vote, amount]
-  })
+   await approveAllowance().then( async () => {
+
+    const allowance = await getAllowance({account})
+    
+    console.log("updated allowance : ", allowance)
+
+
+    const transaction = prepareContractCall({
+      contract: polyMarketContract,
+      method: "function placeBet(uint256, bool, uint256) public",
+      params: [marketId, vote, toWei("4")]
+    })
+  
+    await sendTransaction({
+      transaction,
+      account
+    })
+   }
+  )
 }
 
 const claimWinnings = async ({marketId}: {marketId: bigint}) => {
@@ -157,6 +198,8 @@ export const PolyAppContext = createContext<AppContextType>({
   claimWinnings: claimWinnings,
 
   placeBet: placeBet,
+
+  getMarket: getMarket
   // getAllowance: getAllowance
 });
 
@@ -173,6 +216,7 @@ export const PolyAppContextProvider: React.FC<{ children: ReactNode }> = ({ chil
       createMarket: useCreateMarket,
       placeBet: placeBet,
       claimWinnings: claimWinnings,
+      getMarket: getMarket
       // getAllowance: getAllowance
     }}>
       {children}

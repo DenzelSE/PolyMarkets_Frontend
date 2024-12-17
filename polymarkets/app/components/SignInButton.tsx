@@ -6,6 +6,7 @@ import {
 } from "thirdweb/wallets";
 import { thirdwebClient } from "../config/client";
 import { defineChain } from "thirdweb";
+import { contractConfig } from "../config/contractConfig";
 
 
 const wallets = [
@@ -30,11 +31,15 @@ const wallets = [
   createWallet("io.zerion.wallet"),
 ];
 
+const {chainId,rpc} = contractConfig
+
 export function SignInButton() {
+
+    
   return (
     <ConnectButton
       accountAbstraction = {{
-        chain: defineChain(4202),
+        chain: defineChain({id: chainId, rpc}),
         sponsorGas: true,
       }}
       client={thirdwebClient}
