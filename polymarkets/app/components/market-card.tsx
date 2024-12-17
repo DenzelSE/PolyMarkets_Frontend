@@ -8,16 +8,15 @@ import { MarketVotingTrendChart } from './VotingTrendChart'
 import Image from 'next/image'
 import { useActiveAccount, useConnectModal } from 'thirdweb/react'
 import { thirdwebClient } from '../config/client'
-import { defineChain } from 'thirdweb'
+import { defineChain, toWei } from 'thirdweb'
 import { contractConfig } from '../config/contractConfig'
 import { Account } from 'thirdweb/wallets'
-
+import { Skeleton } from "@/components/ui/skeleton"
+import EnterAmountModal from './enterAmountModal'
 
 const {chainId, rpc} = contractConfig
 
-
 const chain  = defineChain({id: chainId, rpc})
-
 
 const AMOUNT: bigint = BigInt(10)
 
@@ -80,7 +79,7 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
     { 
       icon: <DollarSign className="text-blue-400" />, 
       label: 'Total Volume', 
-      value: `$${market.volume}` 
+      value: `Uzar ${market.volume}` 
     }
   ]
 
@@ -158,7 +157,6 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
   )
 }
 
-
 const VoteButton = ({marketId, amount} : {marketId: bigint, amount: bigint}) => {
   const { placeBet } = React.useContext(PolyAppContext)
 
@@ -227,24 +225,31 @@ const ClaimButton = ({marketId}: {marketId: bigint}) => {
   )
 }
 
-
-
-
-export function MarketCard({ market }: { market: Market }) {
+export function MarketCard({ market, isLoading = false }: { market: Market, isLoading?: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const { placeBet, getMarket } = React.useContext(PolyAppContext)
   const [currentMarket, setCurrentMarket] = useState<Market>(market)
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingVote, setIsLoadingVote] = useState<boolean>(false);
+  const [isAmountModalOpen, setIsAmountModalOpen] = useState<boolean>(false);
+  const [vote, setVoting] = useState<boolean>(true);
 
   const { connect } = useConnectModal();
 
-  // useEffect(() => {}, [isLoading])
-
-  // const account = useActiveAccount()
   const [account, setAccount] = useState<Account| undefined>(useActiveAccount())
 
+  const closeEnterAmountModal = () : void => {
+    setIsAmountModalOpen(false);
+  }
+
+  
+  const openEnterAmountModal = ({vote}: {vote: boolean}) => {
+    setVoting(vote)
+    setIsAmountModalOpen(true);
+  }
+
   const _placeBet = async ({marketId, vote, amount}: {marketId: bigint, vote: boolean, amount: bigint}) => {
+    
     if (!account){
       try {
         const wallet  = await connect({ client: thirdwebClient, accountAbstraction: {
@@ -264,12 +269,47 @@ export function MarketCard({ market }: { market: Market }) {
     const _market = await getMarket({marketId: parseInt(market.id)})
     setCurrentMarket(_market)
   }
+
   
   
   if (isLoading) {
-    return <p className='font-bold'>
-      Loading...
-    </p>
+    return (
+      <Card className="bg-[#1e262f] border-gray-800">
+        <div className="p-4">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <Skeleton className="w-8 h-8 rounded-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          </div>
+          
+          <div className="space-y-4 mb-4">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-4 w-1/4" />
+              </div>
+              <Skeleton className="h-2 w-full" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-4 w-1/4" />
+              </div>
+              <Skeleton className="h-2 w-full" />
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-1/4" />
+            <div className="space-x-2">
+              <Skeleton className="h-8 w-20 inline-block" />
+              <Skeleton className="h-8 w-20 inline-block" />
+            </div>
+          </div>
+        </div>
+      </Card>
+    )
   }
 
   return (
@@ -324,49 +364,57 @@ export function MarketCard({ market }: { market: Market }) {
               </div>
             </div>
             
-            {/* <div className="flex items-center justify-between text-xs text-gray-400"> */}
-              <div className="flex items-center justify-between text-xs text-gray-400">
+            <div className="flex items-center justify-between text-xs text-gray-400">
               <div className="flex items-center space-x-2">
-                <span>${currentMarket.volume} Vol</span>
-                {/* <span>•</span>
-                <span>{currentMarket.views} Views</span> */}
+                <span className='font-semibold text-slate-300'>Vol • {currentMarket.volume} Uzar</span>
               </div>
               <div className="flex items-center space-x-2">
                 <button 
                 onClick={async () => {
-                  setIsLoading(true);
-                  _placeBet({marketId: BigInt(currentMarket.id), vote: true, amount:AMOUNT}).then(() => {
-                    console.log("successfully placed bet")
-                  }).catch((error) => {
-                    console.log("failed to place bet : ", error)
-                  }).finally(() => {
-                    setIsLoading(false);
-                  })
+                  openEnterAmountModal({vote: true})
                 }}
-                className="px-3 py-1 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20">
-                  Buy Yes
+                disabled={isLoadingVote}
+                className={`px-3 py-1 rounded ${
+                  isLoadingVote 
+                    ? 'bg-gray-400/10 text-gray-400 cursor-not-allowed' 
+                    : 'bg-green-400/10 text-green-400 hover:bg-green-400/20'
+                }`}>
+                  {isLoadingVote ? 'Loading...' : 'Buy Yes'}
                 </button>
                 <button 
                 onClick={async () => {
-                  setIsLoading(true);
-                  _placeBet({marketId: BigInt(currentMarket.id), vote: false, amount: AMOUNT}).then(() => {
-                    console.log("successfully placed bet")
-                  }).catch((error) => {
-                    console.log("failed to place bet : ", error)
-                  }).finally(() => {
-                    setIsLoading(false);
-                  })
-                  
+                  openEnterAmountModal({vote: false})
                 }}
-                className="px-3 py-1 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20">
-                  Buy No
+                disabled={isLoadingVote}
+                className={`px-3 py-1 rounded ${
+                  isLoadingVote 
+                    ? 'bg-gray-400/10 text-gray-400 cursor-not-allowed' 
+                    : 'bg-red-400/10 text-red-400 hover:bg-red-400/20'
+                }`}>
+                  {isLoadingVote ? 'Loading...' : 'Buy No'}
                 </button>
               </div>
-            {/* </div> */}
             </div>
           </div>
         </Card>
       </motion.div>
+      
+      <EnterAmountModal 
+      isOpen={isAmountModalOpen}
+      title = "Enter Amount"
+      description = "Please enter the amount you wish to proceed with."
+      onConfirm={
+        async ({amount}: {amount: string}) => {
+        setIsLoadingVote(true);
+          _placeBet({marketId: BigInt(currentMarket.id),vote, amount:toWei(amount)}).then(() => {
+            console.log("successfully placed bet")
+          }).catch((error) => {
+            console.log("failed to place bet : ", error)
+          }).finally(() => {
+            setIsLoadingVote(false);
+          })
+        }
+      } toggle={closeEnterAmountModal} cancelButtonText='Cancel' confirmButtonText='Place Bet'/>
 
       <MarketDetailModal 
         market={currentMarket} 
@@ -376,7 +424,6 @@ export function MarketCard({ market }: { market: Market }) {
     </>
   )
 }
-
 
 const IsResolved = ({isResolved} : {isResolved: boolean}) => {
   return (
@@ -394,3 +441,4 @@ const IsResolved = ({isResolved} : {isResolved: boolean}) => {
       </div>
     )
 }
+

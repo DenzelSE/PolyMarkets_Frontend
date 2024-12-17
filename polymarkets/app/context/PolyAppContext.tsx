@@ -138,12 +138,12 @@ const placeBet = async ({marketId, vote, amount, account} : {marketId: bigint, v
   console.log("allowance : ", allowance)
 
   const approveAllowance = async () => {
-    if (allowance < toWei("100")) {
+    if (allowance < amount) {
       //   // approve uZAR
         const transaction =  prepareContractCall({
           contract: uZarContract,
           method: "function approve(address,uint256)",
-          params: [polyMarketContract.address, toWei(`100`)],
+          params: [polyMarketContract.address, amount],
         });
     
         await sendTransaction({
@@ -163,7 +163,7 @@ const placeBet = async ({marketId, vote, amount, account} : {marketId: bigint, v
     const transaction = prepareContractCall({
       contract: polyMarketContract,
       method: "function placeBet(uint256, bool, uint256) public",
-      params: [marketId, vote, toWei("4")]
+      params: [marketId, vote, amount]
     })
   
     await sendTransaction({
