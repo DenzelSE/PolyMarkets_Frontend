@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 
 const EnterAmountModal = ({ 
   isOpen, 
@@ -57,16 +56,14 @@ const EnterAmountModal = ({
         </DialogHeader>
         
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="amount" className="text-right">
-              Amount
-            </Label>
+          <div className="">
+         
             <Input
               id="amount"
               value={amount}
               onChange={handleAmountChange}
-              className="col-span-3"
-              placeholder="Enter amount"
+              className="col-span-3  py-6 text-center text-2xl font-bold  border-none focus:border-none"
+              placeholder="0"
               type="text"
             />
           </div>
@@ -79,11 +76,13 @@ const EnterAmountModal = ({
           <Button 
             variant="outline" 
             onClick={toggle}
+            className='bg-[#1a2027] text-white  border-none py-6'
           >
             {cancelButtonText}
           </Button>
           <Button 
             onClick={handleConfirm}
+            className='bg-[#1F2937] text-white  mb-2 py-6'
           >
             {confirmButtonText}
           </Button>
