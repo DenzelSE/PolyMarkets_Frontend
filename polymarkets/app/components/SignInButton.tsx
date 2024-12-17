@@ -5,8 +5,10 @@ import {
   createWallet,
 } from "thirdweb/wallets";
 import { thirdwebClient } from "../config/client";
+
 import { defineChain } from "thirdweb";
 import { contractConfig } from "../config/contractConfig";
+
 
 
 const wallets = [
@@ -53,6 +55,10 @@ export function SignInButton() {
         },
       })}
       connectModal={{ size: "compact" }}
+      accountAbstraction={{
+        chain: defineChain(4202),
+        sponsorGas: true,
+      }}
     />
   );
 }
