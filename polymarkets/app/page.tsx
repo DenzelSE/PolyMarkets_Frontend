@@ -5,19 +5,23 @@ import { CategoryScroll } from './components/category-scroll'
 import { PolyAppContext } from './context/PolyAppContext'
 import { Market } from '@/lib/types'
 import { Topbar } from './components/Topbar'
+import { useActiveAccount } from 'thirdweb/react'
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [markets, setMarkets] = useState<Market[]>([])
   const {readMarkets, createMarket} = useContext(PolyAppContext);
+  const account = useActiveAccount()
 
 
   const _createMarket = async (question: string, expiresAt: number) => {
     try {
-      const market = await createMarket(question, expiresAt);
-      console.log(market);
-      const _markets = await readMarkets();
-      setMarkets(_markets);
+      if (account) {
+        const market = await createMarket(question, expiresAt, account!);
+        console.log(market);
+        const _markets = await readMarkets();
+        setMarkets(_markets);
+      }
     } catch (error) {
       alert(error instanceof Error ? error.message : 'An error occurred');
     }

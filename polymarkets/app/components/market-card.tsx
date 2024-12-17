@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,6 +6,20 @@ import { Market } from '@/lib/types'
 import { PolyAppContext } from '../context/PolyAppContext'
 import { MarketVotingTrendChart } from './VotingTrendChart'
 import Image from 'next/image'
+import { useActiveAccount, useConnectModal } from 'thirdweb/react'
+import { thirdwebClient } from '../config/client'
+import { defineChain } from 'thirdweb'
+import { contractConfig } from '../config/contractConfig'
+import { Account } from 'thirdweb/wallets'
+
+
+const {chainId, rpc} = contractConfig
+
+
+const chain  = defineChain({id: chainId, rpc})
+
+
+const AMOUNT: bigint = BigInt(10)
 
 interface MarketDetailModalProps {
   market: Market
@@ -133,7 +147,7 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
                 {/* Trend Chart */}
                 <MarketVotingTrendChart />
 
-                {(market.resolved) ? <ClaimButton marketId={BigInt(market.id)} /> : <VoteButton marketId={BigInt(market.id)} amount={BigInt(1)} />}
+                {(market.resolved) ? <ClaimButton marketId={BigInt(market.id)} /> : <VoteButton marketId={BigInt(market.id)} amount={AMOUNT} />}
               
               </CardContent>
             </Card>
@@ -148,16 +162,38 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
 const VoteButton = ({marketId, amount} : {marketId: bigint, amount: bigint}) => {
   const { placeBet } = React.useContext(PolyAppContext)
 
+  const { connect } = useConnectModal();
+
+  const account = useActiveAccount()
+
+  const _placeBet = async ({marketId, vote, amount}: {marketId: bigint, vote: boolean, amount: bigint}) => {
+    if (account) {
+      console.log("connected", account)
+      await placeBet({marketId, vote, amount, account})
+    }  else {
+      try {
+        const wallet = await connect({ client: thirdwebClient, accountAbstraction: {
+          chain,
+          sponsorGas: true,
+        }});
+        console.log("connected to : ", wallet)
+        await placeBet({marketId, vote, amount, account})
+      } catch(error) {
+        console.log(error)
+      }
+    }
+  } 
+
   return (
     <div className="flex space-x-4">
       <button
-        onClick={() => placeBet({marketId, vote: true, amount})}
+        onClick={() => _placeBet({marketId, vote: true, amount})}
         className="flex-1 py-3 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20 transition-colors"
       >
         Buy Yes
       </button>
       <button
-        onClick={() => placeBet({marketId, vote: false, amount})}
+        onClick={() => _placeBet({marketId, vote: false, amount})}
         className="flex-1 py-3 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20 transition-colors"
       >
         Buy No
@@ -165,6 +201,13 @@ const VoteButton = ({marketId, amount} : {marketId: bigint, amount: bigint}) => 
     </div>
   )
 }
+
+// const SignInModal = () => {
+
+//   return (
+//     useConnectModal()
+//   )
+// }
 
 const ClaimButton = ({marketId}: {marketId: bigint}) => {
 
@@ -188,8 +231,46 @@ const ClaimButton = ({marketId}: {marketId: bigint}) => {
 
 
 export function MarketCard({ market }: { market: Market }) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const {placeBet} = useContext(PolyAppContext)
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+  const { placeBet, getMarket } = React.useContext(PolyAppContext)
+  const [currentMarket, setCurrentMarket] = useState<Market>(market)
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const { connect } = useConnectModal();
+
+  // useEffect(() => {}, [isLoading])
+
+  // const account = useActiveAccount()
+  const [account, setAccount] = useState<Account| undefined>(useActiveAccount())
+
+  const _placeBet = async ({marketId, vote, amount}: {marketId: bigint, vote: boolean, amount: bigint}) => {
+    if (!account){
+      try {
+        const wallet  = await connect({ client: thirdwebClient, accountAbstraction: {
+          chain,
+          sponsorGas: true,
+        }});
+        console.log("connected to : ", wallet)
+
+        setAccount(wallet.getAccount());
+
+      } catch(error) {
+        console.log(error)
+      }
+    }
+
+    await placeBet({marketId, vote, amount, account})
+    const _market = await getMarket({marketId: parseInt(market.id)})
+    setCurrentMarket(_market)
+  }
+  
+  
+  if (isLoading) {
+    return <p className='font-bold'>
+      Loading...
+    </p>
+  }
 
   return (
     <>
@@ -201,17 +282,17 @@ export function MarketCard({ market }: { market: Market }) {
       >
         <Card className="bg-[#1e262f] border-gray-800 hover:bg-[#232a34] transition-colors">
           <div className='flex justify-end pt-4 pr-4'>
-            <IsResolved isResolved={market.resolved} />
+            <IsResolved isResolved={currentMarket.resolved} />
           </div>
           <div className="p-4">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
-                {market.icon && (
-                  <Image height={8} width={8} src={market.icon} alt="" className="w-8 h-8 rounded-full" />
+                {currentMarket.icon && (
+                  <Image height={8} width={8} src={currentMarket.icon} alt="" className="w-8 h-8 rounded-full" />
                 )}
                 <h3
                   onClick={() => setIsModalOpen(true)}
-                  className="font-bold text-md hover:underline">{market.question}
+                  className="font-bold text-md hover:underline">{currentMarket.question}
                 </h3>
               </div>
             </div>
@@ -220,24 +301,24 @@ export function MarketCard({ market }: { market: Market }) {
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-400">Yes</span>
-                  <span className="text-sm font-medium text-green-400">{market.yesPercentage}%</span>
+                  <span className="text-sm font-medium text-green-400">{currentMarket.yesPercentage}%</span>
                 </div>
                 <div className="h-2 bg-gray-800 overflow-hidden">
                   <div
                     className="h-full bg-green-400/50"
-                    style={{ width: `${market.yesPercentage}%` }}
+                    style={{ width: `${currentMarket.yesPercentage}%` }}
                   />
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-400">No</span>
-                  <span className="text-sm font-medium text-red-400">{market.noPercentage}%</span>
+                  <span className="text-sm font-medium text-red-400">{currentMarket.noPercentage}%</span>
                 </div>
                 <div className="h-2 bg-gray-800 overflow-hidden">
                   <div
                     className="h-full bg-red-400/50 "
-                    style={{ width: `${market.noPercentage}%` }}
+                    style={{ width: `${currentMarket.noPercentage}%` }}
                   />
                 </div>
               </div>
@@ -246,21 +327,36 @@ export function MarketCard({ market }: { market: Market }) {
             {/* <div className="flex items-center justify-between text-xs text-gray-400"> */}
               <div className="flex items-center justify-between text-xs text-gray-400">
               <div className="flex items-center space-x-2">
-                <span>${market.volume} Vol</span>
+                <span>${currentMarket.volume} Vol</span>
                 {/* <span>•</span>
-                <span>{market.views} Views</span> */}
+                <span>{currentMarket.views} Views</span> */}
               </div>
               <div className="flex items-center space-x-2">
                 <button 
                 onClick={async () => {
-                  placeBet({marketId: BigInt(market.id), vote: true, amount:BigInt(1)})
+                  setIsLoading(true);
+                  _placeBet({marketId: BigInt(currentMarket.id), vote: true, amount:AMOUNT}).then(() => {
+                    console.log("successfully placed bet")
+                  }).catch((error) => {
+                    console.log("failed to place bet : ", error)
+                  }).finally(() => {
+                    setIsLoading(false);
+                  })
                 }}
                 className="px-3 py-1 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20">
                   Buy Yes
                 </button>
                 <button 
                 onClick={async () => {
-                  placeBet({marketId: BigInt(market.id), vote: false, amount: BigInt(1)})
+                  setIsLoading(true);
+                  _placeBet({marketId: BigInt(currentMarket.id), vote: false, amount: AMOUNT}).then(() => {
+                    console.log("successfully placed bet")
+                  }).catch((error) => {
+                    console.log("failed to place bet : ", error)
+                  }).finally(() => {
+                    setIsLoading(false);
+                  })
+                  
                 }}
                 className="px-3 py-1 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20">
                   Buy No
@@ -273,7 +369,7 @@ export function MarketCard({ market }: { market: Market }) {
       </motion.div>
 
       <MarketDetailModal 
-        market={market} 
+        market={currentMarket} 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
       />
