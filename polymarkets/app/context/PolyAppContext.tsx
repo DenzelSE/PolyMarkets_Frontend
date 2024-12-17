@@ -1,16 +1,16 @@
 import { Market } from "@/lib/types";
 import React, { createContext, useState, ReactNode } from 'react';
-import { defineChain, getContract, prepareContractCall, readContract, sendTransaction, toWei } from "thirdweb";
+import { defineChain, getContract, prepareContractCall, readContract, sendTransaction } from "thirdweb";
 import { contractConfig } from "../config/contractConfig";
 import { thirdwebClient } from "../config/client";
 import Web3 from "web3";
-import { useActiveAccount } from "thirdweb/react";
+// import { useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
 
-export enum BuyType {
-  YES,
-  NO
-}
+// export enum BuyType {
+//   YES,
+//   NO
+// }
 
 // Define the context interface
 interface AppContextType {
@@ -18,7 +18,7 @@ interface AppContextType {
   setMarkets: React.Dispatch<React.SetStateAction<Market[]>>;
   readMarkets: () => Promise<Market[]>,
   createMarket: (question:string, expiresAt: number, account: Account) => Promise<void>
-  placeBet: ({marketId, vote, amount, account} : {marketId: bigint, vote: boolean, amount : bigint, account: any}) => Promise<void>
+  placeBet: ({marketId, vote, amount, account} : {marketId: bigint, vote: boolean, amount : bigint, account: Account}) => Promise<void>
   claimWinnings: ({marketId}: {marketId: bigint}) => Promise<void>
   getMarket: ({marketId}: {marketId: number}) => Promise<Market>
   // getAllowance: ({account}: {account: any}) => Promise<bigint>
@@ -43,7 +43,7 @@ const uZarContract = getContract({
 })
 
 
-const getAllowance = async ({account} : {account: any}): Promise<bigint> => {
+const getAllowance = async ({account} : {account: Account}): Promise<bigint> => {
   const allowance = await readContract({
     contract: uZarContract,
     method: "function allowance(address owner, address spender) view returns (uint256)",
@@ -131,7 +131,7 @@ const useReadMarkets = async (): Promise<Market[]> => {
 }
 
 
-const placeBet = async ({marketId, vote, amount, account} : {marketId: bigint, vote: boolean, amount : bigint, account: any}) => {
+const placeBet = async ({marketId, vote, amount, account} : {marketId: bigint, vote: boolean, amount : bigint, account: Account}) => {
 
   const allowance = await getAllowance({account})
 

@@ -24,7 +24,7 @@ const EnterAmountModal = ({
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
 
-  const handleAmountChange = (e) => {
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Allow only numbers and decimal point
     const sanitizedValue = value.replace(/[^0-9.]/g, '');

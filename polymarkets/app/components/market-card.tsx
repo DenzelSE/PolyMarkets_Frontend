@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -175,7 +175,9 @@ const VoteButton = ({marketId, amount} : {marketId: bigint, amount: bigint}) => 
           sponsorGas: true,
         }});
         console.log("connected to : ", wallet)
-        await placeBet({marketId, vote, amount, account})
+        if (account) {
+          await placeBet({marketId, vote, amount, account})
+        }
       } catch(error) {
         console.log(error)
       }
@@ -265,9 +267,11 @@ export function MarketCard({ market, isLoading = false }: { market: Market, isLo
       }
     }
 
-    await placeBet({marketId, vote, amount, account})
-    const _market = await getMarket({marketId: parseInt(market.id)})
-    setCurrentMarket(_market)
+    if (account) {
+      await placeBet({marketId, vote, amount, account})
+      const _market = await getMarket({marketId: parseInt(market.id)})
+      setCurrentMarket(_market)
+    }
   }
 
   
