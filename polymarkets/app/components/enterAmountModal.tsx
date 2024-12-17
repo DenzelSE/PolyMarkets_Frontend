@@ -55,14 +55,14 @@ const EnterAmountModal = ({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         
-        <div className="grid gap-4 py-4">
+        <div className="flex flex-col py-4">
           <div className="">
          
             <Input
               id="amount"
               value={amount}
               onChange={handleAmountChange}
-              className="col-span-3  py-6 text-center text-2xl font-bold  border-none focus:border-none"
+              className="col-span-3 py-6 text-center text-2xl font-bold  border-none focus:border-none"
               placeholder="0"
               type="text"
             />
