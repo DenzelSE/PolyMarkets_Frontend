@@ -8,7 +8,7 @@ import { useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
 
 export enum BuyType {
-  YES, 
+  YES,
   NO
 }
 
