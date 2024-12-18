@@ -6,6 +6,7 @@ import { PolyAppContext } from './context/PolyAppContext'
 import { Market } from '@/lib/types'
 import { Topbar } from './components/Topbar'
 import { AppSidebar } from './components/AppSidebar'
+import { AppCarousel } from './components/AppCarousel'
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -43,6 +44,10 @@ export default function Home() {
     <main className="">
       
       <Topbar createMarket={_createMarket} />
+      <div className='container mx-auto
+      '>
+      <AppCarousel/>
+      </div>
 
       <div className='container mx-auto py-6 px-4'>
         <CategoryScroll
