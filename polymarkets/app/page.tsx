@@ -41,7 +41,7 @@ export default function Home() {
 
 
   return (
-    <main className="">
+    <main className="mx-auto">
       
       <Topbar createMarket={_createMarket} />
       <div className='container mx-auto
