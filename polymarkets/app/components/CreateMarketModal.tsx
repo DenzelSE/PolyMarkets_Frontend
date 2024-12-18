@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 export const CreateMarketButton = ({
   createMarket,
@@ -38,21 +39,27 @@ export const CreateMarketModal: React.FC<CreateMarketModalProps> = ({
   onClose,
   createMarket,
 }) => {
-  // State for form inputs
   const [question, setQuestion] = useState("");
   const [expirationDate, setExpirationDate] = useState<string>("");
   const [category, setCategory] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    createMarket(
-      question,
-      Math.floor(new Date(expirationDate).getTime() / 1000)
-    );
-
-    onClose();
+    try {
+      setIsLoading(true);
+      await createMarket(
+        question,
+        Math.floor(new Date(expirationDate).getTime() / 1000)
+      );
+      onClose();
+    } catch (error) {
+      console.error("Failed to create market:", error);
+      alert(error instanceof Error ? error.message : "Failed to create market");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,37 +99,54 @@ export const CreateMarketModal: React.FC<CreateMarketModalProps> = ({
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   placeholder="Type market name"
                   required
+                  disabled={isLoading}
                 />
               </div>
-              <div className="w-max  col-span-6">
+              <div className="w-max col-span-6">
                 <DatePicker
                   value={expirationDate}
                   onChange={(date) => setExpirationDate(date)}
+                  // disabled={isLoading}
                 />
                 <CategoryDropdown
                   value={category}
                   onChange={(selectedCategory) => setCategory(selectedCategory)}
+                  // disabled={isLoading}
                 />
               </div>
-              <FilePicker file={file} onChange={handleFileChange} />
+              <FilePicker
+                file={file}
+                onChange={handleFileChange}
+                // disabled={isLoading}
+              />
             </div>
             <button
               type="submit"
-              className="text-white inline-flex items-center bg-[#1F2937] hover:bg-[#1f2937ad] outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+              disabled={isLoading}
+              className="text-white inline-flex items-center bg-[#1F2937] hover:bg-[#1f2937ad] outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg
-                className="me-1 -ms-1 w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-              Add new market
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating market...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="me-1 -ms-1 w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    ></path>
+                  </svg>
+                  Add new market
+                </>
+              )}
             </button>
           </form>
         </div>
