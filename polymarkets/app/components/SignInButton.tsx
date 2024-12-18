@@ -35,13 +35,15 @@ const wallets = [
 
 const {chainId,rpc} = contractConfig
 
+const chain  = defineChain({id: chainId, rpc})
+
 export function SignInButton() {
 
     
   return (
     <ConnectButton
       accountAbstraction = {{
-        chain: defineChain({id: chainId, rpc}),
+        chain,
         sponsorGas: true,
       }}
       client={thirdwebClient}
@@ -55,10 +57,6 @@ export function SignInButton() {
         },
       })}
       connectModal={{ size: "compact" }}
-      accountAbstraction={{
-        chain: defineChain(4202),
-        sponsorGas: true,
-      }}
     />
   );
 }
