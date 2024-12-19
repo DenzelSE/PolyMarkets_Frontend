@@ -18,8 +18,6 @@ const { chainId, rpc } = contractConfig;
 
 const chain = defineChain({ id: chainId, rpc });
 
-const AMOUNT: bigint = BigInt(10);
-
 interface MarketDetailModalProps {
   market: Market;
   isOpen: boolean;
@@ -216,7 +214,6 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
 };
 
 const VoteButton = ({
-  marketId,
   onPlaceBet,
 }: {
   marketId: bigint;
