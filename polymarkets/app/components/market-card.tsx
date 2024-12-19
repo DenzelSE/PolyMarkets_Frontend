@@ -368,7 +368,7 @@ export function MarketCard({
   };
 
   const LoadingCard = () => (
-    <Card className="bg-[#1e262f] border-gray-800">
+    <Card className="bg-[#1e262f] border-gray-800 h-[300px] w-full max-w-md">
       <div className="flex justify-end pt-4 pr-4">
         <Skeleton className="w-16 h-6 rounded" />
       </div>
@@ -428,14 +428,16 @@ export function MarketCard({
         transition={{ duration: 0.2 }}
         className="cursor-pointer"
       >
-        <Card className="bg-[#1e262f] border-gray-800 hover:bg-[#232a34] transition-colors">
+        <Card
+          className="bg-[#1e262f] border-gray-800 hover:bg-[#232a34] transition-colors h-[300px] w-full max-w-md flex flex-col"
+        >
           <div className="flex justify-end pt-4 pr-4">
             <IsResolved
               isResolved={currentMarket.resolved}
               expiresAt={market.expiresAt}
             />
           </div>
-          <div className="p-4">
+          <div className="p-4 flex-grow flex flex-col justify-between">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
                 {currentMarket.icon && (
@@ -449,13 +451,13 @@ export function MarketCard({
                 )}
                 <h3
                   onClick={() => setIsModalOpen(true)}
-                  className="font-bold text-md hover:underline"
+                  className="font-bold text-md hover:underline line-clamp-2"
                 >
                   {currentMarket.question}
                 </h3>
               </div>
             </div>
-
+  
             <div className="grid grid-cols-1 gap-4 mb-4">
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
@@ -486,7 +488,7 @@ export function MarketCard({
                 </div>
               </div>
             </div>
-
+  
             <div className="flex items-center justify-between text-xs text-gray-400">
               <div className="flex items-center space-x-2">
                 <span className="font-semibold text-slate-300">
@@ -525,7 +527,7 @@ export function MarketCard({
           </div>
         </Card>
       </motion.div>
-
+  
       <EnterAmountModal
         isOpen={isAmountModalOpen}
         title="Enter Amount"
@@ -551,7 +553,7 @@ export function MarketCard({
         cancelButtonText="Cancel"
         confirmButtonText="Place Bet"
       />
-
+  
       <MarketDetailModal
         market={currentMarket}
         isOpen={isModalOpen}
@@ -563,4 +565,5 @@ export function MarketCard({
       />
     </>
   );
+  
 }
