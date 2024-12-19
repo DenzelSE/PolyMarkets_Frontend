@@ -18,20 +18,27 @@ const { chainId, rpc } = contractConfig;
 
 const chain = defineChain({ id: chainId, rpc });
 
-const AMOUNT: bigint = BigInt(10);
-
 interface MarketDetailModalProps {
   market: Market;
   isOpen: boolean;
   onClose: () => void;
 }
 
+interface MarketDetailModalProps {
+  market: Market;
+  isOpen: boolean;
+  onClose: () => void;
+  isLoading?: boolean;
+  onPlaceBet: (vote: boolean) => void;
+}
+
 export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
   market,
   isOpen,
   onClose,
+  isLoading = false,
+  onPlaceBet,
 }) => {
-  // Variants for modal and backdrop animations
   const backdropVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
@@ -63,7 +70,6 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
     },
   };
 
-  // Detailed market stats
   const marketStats = [
     {
       icon: <TrendingUp className="text-green-400" />,
@@ -84,6 +90,46 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
 
   if (!isOpen) return null;
 
+  const LoadingContent = () => (
+    <Card className="bg-[#1e262f] border-gray-800">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-gray-800 pb-4">
+        <div className="flex items-center space-x-3">
+          <Skeleton className="w-10 h-10 rounded-full" />
+          <Skeleton className="h-6 w-48" />
+        </div>
+        <button
+          onClick={onClose}
+          className="text-gray-400 hover:text-white transition-colors"
+        >
+          <X size={24} />
+        </button>
+      </CardHeader>
+
+      <CardContent className="p-6">
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          {[1, 2, 3].map((index) => (
+            <div
+              key={index}
+              className="bg-[#232a34] rounded-lg p-4 text-center"
+            >
+              <Skeleton className="w-6 h-6 mx-auto mb-2" />
+              <Skeleton className="h-3 w-16 mx-auto mb-2" />
+              <Skeleton className="h-4 w-12 mx-auto" />
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-4">
+          <Skeleton className="h-48 w-full rounded-lg" />
+          <div className="flex space-x-4">
+            <Skeleton className="h-12 flex-1 rounded" />
+            <Skeleton className="h-12 flex-1 rounded" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -96,63 +142,70 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
           onClick={onClose}
         >
           <motion.div
-            className="w-full max-w-md bg-[#1e262f] rounded-xl shadow-2xl"
+            className="w-full max-w-md"
             variants={modalVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
             onClick={(e) => e.stopPropagation()}
           >
-            <Card className="bg-[#1e262f] border-gray-800">
-              <CardHeader className="flex flex-row items-center justify-between border-b border-gray-800 pb-4">
-                <div className="flex items-center space-x-3">
-                  {market.icon && (
-                    <Image
-                      src={market.icon}
-                      alt=""
-                      height={10}
-                      width={10}
-                      className="w-10 h-10 rounded-full"
+            {isLoading ? (
+              <LoadingContent />
+            ) : (
+              <Card className="bg-[#1e262f] border-gray-800">
+                <CardHeader className="flex flex-row items-center justify-between border-b border-gray-800 pb-4">
+                  <div className="flex items-center space-x-3">
+                    {market.icon && (
+                      <Image
+                        src={market.icon}
+                        alt=""
+                        height={10}
+                        width={10}
+                        className="w-10 h-10 rounded-full"
+                      />
+                    )}
+                    <CardTitle className="text-lg">{market.question}</CardTitle>
+                  </div>
+                  <button
+                    onClick={onClose}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X size={24} />
+                  </button>
+                </CardHeader>
+
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    {marketStats.map((stat, index) => (
+                      <div
+                        key={index}
+                        className="bg-[#232a34] rounded-lg p-4 text-center"
+                      >
+                        <div className="flex justify-center mb-2">
+                          {stat.icon}
+                        </div>
+                        <p className="text-xs text-gray-400">{stat.label}</p>
+                        <p className="font-bold text-sm">{stat.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <MarketVotingTrendChart />
+
+                  {market.resolved ||
+                  Date.parse(market.expiresAt) < Date.now() ? (
+                    <ClaimButton marketId={BigInt(market.id)} />
+                  ) : (
+                    <VoteButton
+                      marketId={BigInt(market.id)}
+                      // amount={AMOUNT}
+                      // isLoading={isLoading}
+                      onPlaceBet={onPlaceBet}
                     />
                   )}
-                  <CardTitle className="text-lg">{market.question}</CardTitle>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  <X size={24} />
-                </button>
-              </CardHeader>
-
-              <CardContent className="p-6">
-                {/* Market Stats Grid */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  {marketStats.map((stat, index) => (
-                    <div
-                      key={index}
-                      className="bg-[#232a34] rounded-lg p-4 text-center"
-                    >
-                      <div className="flex justify-center mb-2">
-                        {stat.icon}
-                      </div>
-                      <p className="text-xs text-gray-400">{stat.label}</p>
-                      <p className="font-bold text-sm">{stat.value}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Trend Chart */}
-                <MarketVotingTrendChart />
-
-                {market.resolved ||
-                Date.parse(market.expiresAt) < Date.now() ? (
-                  <ClaimButton marketId={BigInt(market.id)} />
-                ) : (
-                  <VoteButton marketId={BigInt(market.id)} amount={AMOUNT} />
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </motion.div>
         </motion.div>
       )}
@@ -161,73 +214,32 @@ export const MarketDetailModal: React.FC<MarketDetailModalProps> = ({
 };
 
 const VoteButton = ({
-  marketId,
-  amount,
+  onPlaceBet,
 }: {
   marketId: bigint;
-  amount: bigint;
+  onPlaceBet: (vote: boolean) => void;
 }) => {
-  const { placeBet } = React.useContext(PolyAppContext);
-
-  const { connect } = useConnectModal();
-
-  const account = useActiveAccount();
-
-  const _placeBet = async ({
-    marketId,
-    vote,
-    amount,
-  }: {
-    marketId: bigint;
-    vote: boolean;
-    amount: bigint;
-  }) => {
-    if (account) {
-      console.log("connected", account);
-      await placeBet({ marketId, vote, amount, account });
-    } else {
-      try {
-        const wallet = await connect({
-          client: thirdwebClient,
-          accountAbstraction: {
-            chain,
-            sponsorGas: true,
-          },
-        });
-        console.log("connected to : ", wallet);
-        if (account) {
-          await placeBet({ marketId, vote, amount, account });
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  };
-
   return (
     <div className="flex space-x-4">
       <button
-        onClick={() => _placeBet({ marketId, vote: true, amount })}
-        className="flex-1 py-3 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20 transition-colors"
+        onClick={() => {
+          onPlaceBet(false);
+        }}
+        className="flex-1 py-3 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20"
       >
-        Buy Yes
+        {false ? "Loading..." : "Buy Yes"}
       </button>
       <button
-        onClick={() => _placeBet({ marketId, vote: false, amount })}
-        className="flex-1 py-3 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20 transition-colors"
+        onClick={() => {
+          onPlaceBet(false);
+        }}
+        className="flex-1 py-3 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20"
       >
-        Buy No
+        {false ? "Loading..." : "Buy No"}
       </button>
     </div>
   );
 };
-
-// const SignInModal = () => {
-
-//   return (
-//     useConnectModal()
-//   )
-// }
 
 const ClaimButton = ({ marketId }: { marketId: bigint }) => {
   const { claimWinnings } = useContext(PolyAppContext);
@@ -239,7 +251,6 @@ const ClaimButton = ({ marketId }: { marketId: bigint }) => {
     <div className="flex justify-end">
       <button
         onClick={async () => {
-          // claimWinnings({ marketId, account });
           if (account) {
             console.log("connected", account);
             await claimWinnings({ marketId, account });
@@ -270,23 +281,47 @@ const ClaimButton = ({ marketId }: { marketId: bigint }) => {
   );
 };
 
+const IsResolved = ({
+  isResolved,
+  expiresAt,
+}: {
+  isResolved: boolean;
+  expiresAt: string;
+}) => {
+  console.log(
+    "Is Expires : ",
+    parseInt(expiresAt) < Math.floor(Date.now() / 1000)
+  );
+
+  console.log("expiresAt : ", Math.floor(Date.parse(expiresAt) / 1000));
+  console.log("date now : ", Math.floor(Date.now() / 1000));
+
+  return isResolved || Date.parse(expiresAt) < Date.now() ? (
+    <div className="px-3 py-1 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20 w-min text-xs">
+      Resolved
+    </div>
+  ) : (
+    <div className="px-3 py-1 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20 w-min text-xs">
+      Open
+    </div>
+  );
+};
+
+// market card
 export function MarketCard({
   market,
-  isLoading = false,
-}: {
+}: // isLoading = false,
+{
   market: Market;
   isLoading?: boolean;
 }) {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const { placeBet, getMarket } = React.useContext(PolyAppContext);
   const [currentMarket, setCurrentMarket] = useState<Market>(market);
-
   const [isLoadingVote, setIsLoadingVote] = useState<boolean>(false);
   const [isAmountModalOpen, setIsAmountModalOpen] = useState<boolean>(false);
   const [vote, setVoting] = useState<boolean>(true);
-
   const { connect } = useConnectModal();
-
   const [account, setAccount] = useState<Account | undefined>(
     useActiveAccount()
   );
@@ -319,7 +354,6 @@ export function MarketCard({
           },
         });
         console.log("connected to : ", wallet);
-
         setAccount(wallet.getAccount());
       } catch (error) {
         console.log(error);
@@ -333,43 +367,56 @@ export function MarketCard({
     }
   };
 
-  if (isLoading) {
-    return (
-      <Card className="bg-[#1e262f] border-gray-800">
-        <div className="p-4">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <Skeleton className="w-8 h-8 rounded-full" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-          </div>
-
-          <div className="space-y-4 mb-4">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Skeleton className="h-4 w-1/4" />
-                <Skeleton className="h-4 w-1/4" />
-              </div>
-              <Skeleton className="h-2 w-full" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Skeleton className="h-4 w-1/4" />
-                <Skeleton className="h-4 w-1/4" />
-              </div>
-              <Skeleton className="h-2 w-full" />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-4 w-1/4" />
-            <div className="space-x-2">
-              <Skeleton className="h-8 w-20 inline-block" />
-              <Skeleton className="h-8 w-20 inline-block" />
-            </div>
+  const LoadingCard = () => (
+    <Card className="bg-[#1e262f] border-gray-800">
+      <div className="flex justify-end pt-4 pr-4">
+        <Skeleton className="w-16 h-6 rounded" />
+      </div>
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <Skeleton className="w-8 h-8 rounded-full" />
+            <Skeleton className="h-5 w-48" />
           </div>
         </div>
-      </Card>
+
+        <div className="grid grid-cols-1 gap-4 mb-4">
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Skeleton className="h-4 w-8" />
+              <Skeleton className="h-4 w-12" />
+            </div>
+            <Skeleton className="h-2 w-full rounded" />
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Skeleton className="h-4 w-8" />
+              <Skeleton className="h-4 w-12" />
+            </div>
+            <Skeleton className="h-2 w-full rounded" />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-4 w-24" />
+          <div className="flex items-center space-x-2">
+            <Skeleton className="h-7 w-16 rounded" />
+            <Skeleton className="h-7 w-16 rounded" />
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+
+  if (isLoadingVote) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <LoadingCard />
+      </motion.div>
     );
   }
 
@@ -433,7 +480,7 @@ export function MarketCard({
                 </div>
                 <div className="h-2 bg-gray-800 overflow-hidden">
                   <div
-                    className="h-full bg-red-400/50 "
+                    className="h-full bg-red-400/50"
                     style={{ width: `${currentMarket.noPercentage}%` }}
                   />
                 </div>
@@ -509,33 +556,11 @@ export function MarketCard({
         market={currentMarket}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        isLoading={isLoadingVote}
+        onPlaceBet={(vote: boolean) => {
+          openEnterAmountModal({ vote });
+        }}
       />
     </>
   );
 }
-
-const IsResolved = ({
-  isResolved,
-  expiresAt,
-}: {
-  isResolved: boolean;
-  expiresAt: string;
-}) => {
-  console.log(
-    "Is Expires : ",
-    parseInt(expiresAt) < Math.floor(Date.now() / 1000)
-  );
-
-  console.log("expiresAt : ", Math.floor(Date.parse(expiresAt) / 1000));
-  console.log("date now : ", Math.floor(Date.now() / 1000));
-
-  return isResolved || Date.parse(expiresAt) < Date.now() ? (
-    <div className="px-3 py-1 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20 w-min text-xs">
-      Resolved
-    </div>
-  ) : (
-    <div className="px-3 py-1 rounded bg-green-400/10 text-green-400 hover:bg-green-400/20 w-min text-xs">
-      Open
-    </div>
-  );
-};
