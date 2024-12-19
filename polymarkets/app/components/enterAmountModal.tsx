@@ -49,7 +49,7 @@ const EnterAmountModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={toggle}>
-      <DialogContent>
+      <DialogContent className='w-[90%] max-w-lg mx-auto sm:w-[80%] sm:max-w-md md:w-[60%] md:max-w-lg' >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -83,6 +83,7 @@ const EnterAmountModal = ({
           <Button 
             onClick={handleConfirm}
             className='bg-[#1F2937] text-white  mb-2 py-6'
+            disabled={amount.trim() === '' || error !== '' || amount.trim() === '0'}
           >
             {confirmButtonText}
           </Button>
