@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { CreateMarketButton } from "./CreateMarketModal"
 import { SignInButton } from "./SignInButton"
 import { Menu, X, Search } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
 
 export const Topbar = ({createMarket} : {createMarket: (question:string, expiresAt: number) => Promise<void>}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -20,7 +22,10 @@ export const Topbar = ({createMarket} : {createMarket: (question:string, expires
             >
               {isMenuOpen ? <X className="text-white" /> : <Menu className="text-white" />}
             </button>
-            <h1 className="text-xl font-bold">UniMarkets</h1>
+            <Link href="/" className="flex items-center space-x-2">
+              <Image src="/images/carousel/universel.png" alt="UMarkets Logo" width={32} height={32} className="rounded-full" />
+              <span className="text-xl font-bold">UniMarkets</span>
+            </Link>
           </div>
 
           {/* Search for Desktop */}
